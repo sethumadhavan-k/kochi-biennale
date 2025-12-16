@@ -1,6 +1,11 @@
+import './style.css';
+
 // API Configuration
 const API_BASE_URL = 'https://admin.kochimuzirisbiennale.org/api/events?getAll=true&limit=500&size=100&sort=-timeAndDate.startDate&depth=10';
 const CORS_PROXY = 'https://cors.utilitytool.app/';
+
+// Minimum date filter - only show events from this date onwards
+const MIN_DATE = new Date('2025-12-12T00:00:00.000Z');
 
 // Helper function to build proxied URL
 function getProxiedUrl(url) {
@@ -135,8 +140,14 @@ async function fetchEvents(page = 1) {
             // Filter out events without valid dates
             const eventsWithDates = data.docs.filter(hasValidDate);
             
+            // Filter out events before December 12, 2025
+            const eventsAfterMinDate = eventsWithDates.filter(event => {
+                const eventDate = getEventSortDate(event);
+                return eventDate && eventDate >= MIN_DATE;
+            });
+            
             // Sort events by date
-            allEvents = sortEventsByDate(eventsWithDates);
+            allEvents = sortEventsByDate(eventsAfterMinDate);
             
             currentPage = data.page || page;
             totalPages = data.totalPages || 1;
